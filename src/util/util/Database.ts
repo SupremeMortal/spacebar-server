@@ -36,9 +36,17 @@ if (!process.env) {
 const dbConnectionString =
 	process.env.DATABASE || path.join(process.cwd(), "database.db");
 
-const DatabaseType = dbConnectionString.includes("://")
-	? dbConnectionString.split(":")[0]?.replace("+srv", "")
-	: "sqlite";
+function getDatabaseType(connectionString: string) {
+	if (!connectionString.includes("://")) return "sqlite";
+
+	const type = connectionString.split(":")[0]?.replace("+srv", "");
+	if (type == "postgresql") {
+		return "postgres";
+	}
+	return type;
+}
+
+const DatabaseType = getDatabaseType(dbConnectionString);
 const isSqlite = DatabaseType.includes("sqlite");
 
 const DataSourceOptions = new DataSource({
