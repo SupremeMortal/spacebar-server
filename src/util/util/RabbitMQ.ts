@@ -18,6 +18,7 @@
 
 import amqp, { Connection, Channel } from "amqplib";
 import { Config } from "./Config";
+import * as process from "node:process";
 
 export const RabbitMQ: {
 	connection: Connection | null;
@@ -27,8 +28,22 @@ export const RabbitMQ: {
 	connection: null,
 	channel: null,
 	init: async function () {
-		const host = Config.get().rabbitmq.host;
-		if (!host) return;
+		let host: string | amqp.Options.Connect | null =
+			Config.get().rabbitmq.host;
+		if (!host) {
+			host = process.env.RABBIT_MQ_HOST ?? null;
+			if (!host) return;
+
+			if (!host.includes("://")) {
+				host = {
+					protocol: process.env.RABBIT_MQ_PROTOCOL ?? "amqp",
+					hostname: host,
+					port: parseInt(process.env.RABBIT_MQ_PORT ?? "5672"),
+					username: process.env.RABBIT_MQ_USER,
+					password: process.env.RABBIT_MQ_PASS,
+				};
+			}
+		}
 		console.log(`[RabbitMQ] connect: ${host}`);
 		this.connection = await amqp.connect(host, {
 			timeout: 1000 * 60,
