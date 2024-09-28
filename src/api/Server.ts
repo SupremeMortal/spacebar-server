@@ -34,7 +34,7 @@ import "missing-native-js-functions";
 import morgan from "morgan";
 import path from "path";
 import { red } from "picocolors";
-import { Authentication, CORS, ImageProxy } from "./middlewares/";
+import { Authentication, ImageProxy } from "./middlewares/";
 import { BodyParser } from "./middlewares/BodyParser";
 import { ErrorHandler } from "./middlewares/ErrorHandler";
 import { initRateLimits } from "./middlewares/RateLimit";
@@ -99,7 +99,8 @@ export class SpacebarServer extends Server {
 
 		this.app.set("json replacer", JSONReplacer);
 
-		this.app.use(CORS);
+		const cors = require("cors");
+		this.app.use(cors());
 		this.app.use(BodyParser({ inflate: true, limit: "10mb" }));
 
 		const app = this.app;
